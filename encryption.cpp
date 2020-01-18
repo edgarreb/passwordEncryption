@@ -6,10 +6,13 @@
 #include <sstream>
 #include <string>
 #include <stdio.h>
+#include <ctime>
 
 using namespace std;
 
+// a predetermined offset is used for ceaserCipher function call
 const int offset = 13;
+
 const int additionalChars = 3;
 
 void caesarCipher (string file1, string file2) {
@@ -89,8 +92,10 @@ void randomOffset(string originalFile, string encryptedFile, string keyFile) {
 		inputFile.clear();
 		string tempString;
 
+		int newOffset;
 		int randomOffset;
 		int position;
+		int encodedPosition;
 
 		while(inputFile.eof() != true) {
 
@@ -99,16 +104,18 @@ void randomOffset(string originalFile, string encryptedFile, string keyFile) {
 			// convert ASCII to int
 			for(int i = 0; i < tempString.length(); i++) {
 
-				randomOffset = rand() % 100;
+				// will generate values from 0 - 126
+				randomOffset = rand() % 127;
+
 				position = (int) tempString[i];
-				int encodedPosition = position + randomOffset;
+				encodedPosition = position + randomOffset;
 
 				// write the random offset to the keyFile
 				outputFile2 << randomOffset << endl;
 
 				while(encodedPosition > 126) {
 
-					int newOffset = encodedPosition - 126;
+					newOffset = encodedPosition - 126;
 					encodedPosition = 32 + newOffset;
 					//outputFile << (char) encodedPosition;
 				}
@@ -130,6 +137,9 @@ void randomOffset(string originalFile, string encryptedFile, string keyFile) {
 }
 
 int main() {
+
+	// initialize random number generator
+	srand(time(0));
 
 	string file1, file2, file3;
 

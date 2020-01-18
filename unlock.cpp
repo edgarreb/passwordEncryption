@@ -69,14 +69,14 @@ void randomDecrypt(string encryptedFile, string keyFile, string unencryptedFile)
 	ifstream inputFile2;
 	inputFile2.open(keyFile);
 
-	ofstream outputFile;
-	outputFile.open(unencryptedFile);
-
 	if( (inputFile.bad() == true) || (inputFile2.bad() == true) ) {
 
 		cout << "ERROR: Unable to read file.." << endl;
 	}
 	else {
+
+		ofstream outputFile;
+		outputFile.open(unencryptedFile);
 
 		string line;
 		string offsetLine;
@@ -97,8 +97,7 @@ void randomDecrypt(string encryptedFile, string keyFile, string unencryptedFile)
 				tempChar = (char) line[i];
 				encodedPosition = (int) tempChar;
 				randomOffset = stoi(offsetLine);
-				cout << randomOffset << endl;
-
+		
 				decodedPosition = encodedPosition - randomOffset;
 
 				while(decodedPosition < 32) {
@@ -112,10 +111,7 @@ void randomDecrypt(string encryptedFile, string keyFile, string unencryptedFile)
 						randomOffset = abs(decodedPosition) + 32;
 						decodedPosition = 126 - randomOffset;
 					}
-					/*
-					randomOffset = 32 - decodedPosition;
-					decodedPosition = 126 - Offset;
-					//outputFile << (char) newPosition; */
+
 				}
 
 				outputFile << (char) decodedPosition;
@@ -124,11 +120,11 @@ void randomDecrypt(string encryptedFile, string keyFile, string unencryptedFile)
 			outputFile << endl;
 		}
 
+		outputFile.close();
 	}
 
 	inputFile.close();
 	inputFile2.close();
-	outputFile.close();
 
 }
 
