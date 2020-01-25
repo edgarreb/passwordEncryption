@@ -13,8 +13,6 @@ using namespace std;
 // a predetermined offset is used for ceaserCipher function call
 const int offset = 13;
 
-const int additionalChars = 3;
-
 void caesarCipher (string file1, string file2) {
 
 	// open a file and read from it
@@ -28,7 +26,6 @@ void caesarCipher (string file1, string file2) {
 	}
 	else {
 
-		// open file to write to
 		ofstream outputFile;
 		outputFile.open(file2);
 
@@ -68,71 +65,112 @@ void caesarCipher (string file1, string file2) {
 
 }
 
-void randomOffset(string originalFile, string encryptedFile, string keyFile) {
+void randomOffset(string originalFile, string encryptedFile, string offsetFile, string positionFile) {
 
-	// open a file and read from it
-	ifstream inputFile;
-	inputFile.open(originalFile);
+	ifstream originalInput;
+	originalInput.open(originalFile);
 
-	if(inputFile.bad() == true) {
+	if(originalInput.bad() == true) {
 
 		cout << "ERROR: unable to read file.." << endl;
-		inputFile.close();
+		originalInput.close();
 	}
 	else {
 
-		// open file to write to
-		ofstream outputFile;
-		outputFile.open(encryptedFile);
+		// open files to write to
+		ofstream encryptedOutput;
+		encryptedOutput.open(encryptedFile);
 
-		ofstream outputFile2;
-		outputFile2.open(keyFile);
+		ofstream offsetOutput;
+		offsetOutput.open(offsetFile);
 
-		// reset the state flags of inputFile so that we can enter the loop
-		inputFile.clear();
-		string tempString;
+		ofstream positionOutput;
+		positionOutput.open(positionFile);
 
-		int newOffset;
-		int randomOffset;
-		int position;
+		// stores lines from the original file
+		string unencryptedLine;
+
+		// used for math operations to encode a single character
 		int encodedPosition;
+		int randomOffset;
+		int updatedOffset;
 
-		while(inputFile.eof() != true) {
+		// used to store random values
+		int additionalCharacters;
+		int hiddenPosition;
+		int randomCharacter;
 
-			getline(inputFile, tempString);
+		// used to set ranges
+		const int offsetRange = 127;
+		const int characterRange = 10;
 
-			// convert ASCII to int
-			for(int i = 0; i < tempString.length(); i++) {
+		while(originalInput.eof() != true) {
 
-				// will generate values from 0 - 126
-				randomOffset = rand() % 127;
+			getline(originalInput, unencryptedLine);
 
-				position = (int) tempString[i];
-				encodedPosition = position + randomOffset;
+			if(originalInput.eof() != true) {
 
-				// write the random offset to the keyFile
-				outputFile2 << randomOffset << endl;
+				// write the number of initial chars in a given line
+				positionOutput << unencryptedLine.length() << endl;
 
-				while(encodedPosition > 126) {
+				// encryption is done here
+				for(int i = 0; i < unencryptedLine.length(); i++) {
 
-					newOffset = encodedPosition - 126;
-					encodedPosition = 32 + newOffset;
-					//outputFile << (char) encodedPosition;
+					// generate a random offset in range from 0 - 126
+					randomOffset = rand() % offsetRange;
+					offsetOutput << randomOffset << endl;
+
+					// figure out how much down the table to move
+					encodedPosition = static_cast<int>(unencryptedLine[i]) + randomOffset;
+
+					// make sure we are in table range
+					while(encodedPosition > 126) {
+
+						updatedOffset = encodedPosition - 126;
+						encodedPosition = 32 + updatedOffset;
+					}
+
+					string encodedString;
+
+					// generate additional chars and hidden positon (not working test 0)
+					additionalCharacters = rand() % characterRange;
+					positionOutput << "chars: " << additionalCharacters << " ";
+
+					if(additionalCharacters != 0) {
+						hiddenPosition = rand() % additionalCharacters;
+					}
+					else {
+						hiddenPosition = 0;
+					}
+					positionOutput << "pos: " << hiddenPosition << endl;
+
+					// create a string of random additional chars
+					for(int j = 0; j < additionalCharacters; j++) {
+
+						// generate values between 32 - 126 (possible chars from ASCII table)
+						randomCharacter = (rand() % 95) + 32;
+						encodedString.append(1, static_cast<char>(randomCharacter));
+					}
+
+					string encodedChar(1, static_cast<char>(encodedPosition));
+
+					encodedString.insert(hiddenPosition, encodedChar);
+					encryptedOutput << encodedString;
+
 				}
 
-				outputFile << (char) encodedPosition;
-
-				}
-
-				outputFile << endl;
+					encryptedOutput << endl;
 			}
-
-			outputFile.close();
-			outputFile2.close();
 
 		}
 
-		inputFile.close();
+			encryptedOutput.close();
+			offsetOutput.close();
+			positionOutput.close();
+
+	}
+
+		originalInput.close();
 
 }
 
@@ -141,16 +179,23 @@ int main() {
 	// initialize random number generator
 	srand(time(0));
 
-	string file1, file2, file3;
+	string file1, file2, file3, file4;
 
-	cout << "Original File: ";
+	/*cout << "Original File: ";
 		cin >> file1;
 	cout << "Encrypted File: ";
 		cin >> file2;
-	cout << "Key File: ";
+	cout << "Offset File: ";
 		cin >> file3;
+	cout << "Position File: ";
+		cin >> file4;*/
 
-	randomOffset(file1, file2, file3);
+	file1 = "originalFile.txt";
+	file2 = "encryptedFile.txt";
+	file3 = "offsetFile.txt";
+	file4 = "positionFile.txt";
+
+	randomOffset(file1, file2, file3, file4);
 
 	return 0;
 }
