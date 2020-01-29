@@ -1,3 +1,0 @@
-email- myemail@gmail.com
-password- somepassword
-username- someusername
