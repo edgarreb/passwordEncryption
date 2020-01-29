@@ -1,19 +1,15 @@
-// Name: Edgar Martinez
-// Date: 01-07-20
-
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <string>
 #include <stdio.h>
 #include <ctime>
 
 using namespace std;
 
-// a predetermined offset is used for ceaserCipher function call
-const int offset = 13;
+bool caesarCipher(string file1, string file2) {
 
-void caesarCipher (string file1, string file2) {
+	// a predetermined offset is used for ceaserCipher function call
+	const int offset = 13;
 
 	// open a file and read from it
 	ifstream inputFile;
@@ -63,9 +59,10 @@ void caesarCipher (string file1, string file2) {
 		outputFile.close();
 	}
 
+	return true;
 }
 
-void randomOffset(string originalFile, string encryptedFile, string offsetFile, string positionFile) {
+bool randomOffset(string originalFile, string encryptedFile, string offsetFile, string positionFile) {
 
 	ifstream originalInput;
 	originalInput.open(originalFile);
@@ -113,89 +110,74 @@ void randomOffset(string originalFile, string encryptedFile, string offsetFile, 
 				// write the number of initial chars in a given line
 				positionOutput << unencryptedLine.length() << endl;
 
-				// encryption is done here
-				for(int i = 0; i < unencryptedLine.length(); i++) {
+				if(unencryptedLine.length() > 0) {
+					// encryption is done here
+					for(int i = 0; i < unencryptedLine.length(); i++) {
 
-					// generate a random offset in range from 0 - 126
-					randomOffset = rand() % offsetRange;
-					offsetOutput << randomOffset << endl;
+						// generate a random offset in range from 0 - 126
+						randomOffset = rand() % offsetRange;
+						offsetOutput << randomOffset << endl;
 
-					// figure out how much down the table to move
-					encodedPosition = static_cast<int>(unencryptedLine[i]) + randomOffset;
+						// figure out how much down the table to move
+						encodedPosition = static_cast<int>(unencryptedLine[i]) + randomOffset;
 
-					// make sure we are in table range
-					while(encodedPosition > 126) {
+						// make sure we are in table range
+						while(encodedPosition > 126) {
 
-						updatedOffset = encodedPosition - 126;
-						encodedPosition = 32 + updatedOffset;
+							updatedOffset = encodedPosition - 126;
+							encodedPosition = 32 + updatedOffset;
+						}
+
+						string encodedString;
+
+						// generate additional chars and hidden positon (not working test 0)
+						additionalCharacters = rand() % characterRange;
+						positionOutput << additionalCharacters << " ";
+
+						if(additionalCharacters != 0) {
+							hiddenPosition = rand() % additionalCharacters;
+						}
+						else {
+							hiddenPosition = 0;
+						}
+						positionOutput << hiddenPosition << endl;
+
+						// create a string of random additional chars
+						for(int j = 0; j < additionalCharacters; j++) {
+
+							// generate values between 32 - 126 (possible chars from ASCII table)
+							randomCharacter = (rand() % 95) + 32;
+							encodedString.append(1, static_cast<char>(randomCharacter));
+						}
+
+						string encodedChar(1, static_cast<char>(encodedPosition));
+
+						encodedString.insert(hiddenPosition, encodedChar);
+						encryptedOutput << encodedString;
+
 					}
-
-					string encodedString;
-
-					// generate additional chars and hidden positon (not working test 0)
-					additionalCharacters = rand() % characterRange;
-					positionOutput << "chars: " << additionalCharacters << " ";
-
-					if(additionalCharacters != 0) {
-						hiddenPosition = rand() % additionalCharacters;
-					}
-					else {
-						hiddenPosition = 0;
-					}
-					positionOutput << "pos: " << hiddenPosition << endl;
-
-					// create a string of random additional chars
-					for(int j = 0; j < additionalCharacters; j++) {
-
-						// generate values between 32 - 126 (possible chars from ASCII table)
-						randomCharacter = (rand() % 95) + 32;
-						encodedString.append(1, static_cast<char>(randomCharacter));
-					}
-
-					string encodedChar(1, static_cast<char>(encodedPosition));
-
-					encodedString.insert(hiddenPosition, encodedChar);
-					encryptedOutput << encodedString;
-
-				}
 
 					encryptedOutput << endl;
-			}
+				}
+				else {
 
+					// output random garbage
+					for(int i = 0; i < (rand() % 50) + 50; i++) {
+
+						encryptedOutput << static_cast<char>( (rand() % 95) + 32);
+					}
+
+					encryptedOutput << endl;
+				}
+			}
 		}
 
-			encryptedOutput.close();
-			offsetOutput.close();
-			positionOutput.close();
-
+		encryptedOutput.close();
+		offsetOutput.close();
+		positionOutput.close();
 	}
 
-		originalInput.close();
+	originalInput.close();
 
-}
-
-int main() {
-
-	// initialize random number generator
-	srand(time(0));
-
-	string file1, file2, file3, file4;
-
-	/*cout << "Original File: ";
-		cin >> file1;
-	cout << "Encrypted File: ";
-		cin >> file2;
-	cout << "Offset File: ";
-		cin >> file3;
-	cout << "Position File: ";
-		cin >> file4;*/
-
-	file1 = "originalFile.txt";
-	file2 = "encryptedFile.txt";
-	file3 = "offsetFile.txt";
-	file4 = "positionFile.txt";
-
-	randomOffset(file1, file2, file3, file4);
-
-	return 0;
+	return true;
 }
